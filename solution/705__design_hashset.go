@@ -1,10 +1,6 @@
-package main
+package solution
 
 // https://leetcode.com/problems/design-hashset/description/
-
-import (
-	"fmt"
-)
 
 type MyHashSet struct {
 	bucketArray []bool
@@ -35,9 +31,3 @@ func (hs *MyHashSet) Contains(key int) bool {
  * obj.Remove(key);
  * param_3 := obj.Contains(key);
  */
-func main() {
-	mySet := Constructor()
-
-	mySet.Add(1)
-	fmt.Println(mySet.Contains(1))
-}
