@@ -9,6 +9,9 @@ package solution
  * }
  */
 
+// SOLUTION: this is a complete binary tree
+// the node of a complete binary tree should be (2^h - 1) if the node is perfect binary tree
+// otherwise recursively incremental count nodes
 func leftHeight(node *TreeNode) int {
 	cnt := 0
 	for node != nil {
