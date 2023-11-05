@@ -9,9 +9,9 @@ import (
  */
 
 type TreeNode struct {
+	Val   int
 	Left  *TreeNode
 	Right *TreeNode
-	Val   int
 }
 
 func maxDepth(root *TreeNode) int {

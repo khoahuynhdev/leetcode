@@ -9,6 +9,21 @@ package solution
  * }
  */
 
+var exampleRoot = &TreeNode{
+	1, &TreeNode{
+		2, &TreeNode{
+			4, nil, nil,
+		}, &TreeNode{
+			5, nil, nil,
+		},
+	},
+	&TreeNode{
+		3, &TreeNode{
+			6, nil, nil,
+		}, nil,
+	},
+}
+
 // SOLUTION: this is a complete binary tree
 // the node of a complete binary tree should be (2^h - 1) if the node is perfect binary tree
 // otherwise recursively incremental count nodes
