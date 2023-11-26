@@ -1,5 +1,9 @@
 package solution
 
+import (
+	"fmt"
+)
+
 // NOTE: this implementation is good enough
 // for better solution,
 // first and last index array to store position of the appeared vowels
