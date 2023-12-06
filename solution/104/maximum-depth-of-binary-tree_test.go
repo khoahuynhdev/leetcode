@@ -5,7 +5,7 @@ import (
 )
 
 func Test104(t *testing.T) {
-	if val := maxDepth(nil); val != 1 {
+	if val := MaxDepth(nil); val != 1 {
 		t.Errorf("got %v", val)
 	}
 }

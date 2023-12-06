@@ -9,6 +9,12 @@ package solution
  * }
  */
 
+type TreeNode struct {
+	Val   int
+	Left  *TreeNode
+	Right *TreeNode
+}
+
 var exampleRoot = &TreeNode{
 	1, &TreeNode{
 		2, &TreeNode{
