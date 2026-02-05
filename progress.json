@@ -1,0 +1,53 @@
+{
+  "project": "Daily LeetCode Problem Workflow",
+  "spec": "spec.md",
+  "status": "completed",
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Create LeetCode problem fetcher script",
+      "description": "Shell script (scripts/fetch-problem.sh) that queries LeetCode GraphQL API to get daily challenge or a specific problem by URL/slug. Handles exponential backoff retry (3 attempts, 2s initial delay), extracts problem metadata (number, title, slug, difficulty, tags, acceptance rate, content, isPaidOnly), and outputs structured JSON.",
+      "status": "completed",
+      "files": ["scripts/fetch-problem.sh"]
+    },
+    {
+      "id": 2,
+      "title": "Create Claude prompt template for dsa-coach analysis",
+      "description": "Markdown prompt template (scripts/prompt-template.md) that instructs Claude Code to act as a DSA coach. Includes instructions for generating: analysis.md with progressive hints, solution.go with inline types, and solution_test.go with table-driven tests from all examples. Uses delimiters for output parsing.",
+      "status": "completed",
+      "files": ["scripts/prompt-template.md"]
+    },
+    {
+      "id": 3,
+      "title": "Create GitHub Actions workflow file",
+      "description": "Main workflow (.github/workflows/daily-leetcode.yml) with: schedule trigger (00:30 UTC) + workflow_dispatch (optional problem_url input), job steps for fetching problem, detecting premium/duplicates, running claude-code-action with CLAUDE_CODE_OAUTH_TOKEN, executing Go tests, and creating PR with proper naming (feat/daily-YYYYMMDD-slug branch, daily-YYYY-MM-DD-NNNN-name PR title).",
+      "status": "completed",
+      "files": [".github/workflows/daily-leetcode.yml", "scripts/build-prompt.py"],
+      "depends_on": [1, 2]
+    },
+    {
+      "id": 4,
+      "title": "Handle duplicate problem detection",
+      "description": "Logic within the workflow to check if problems/[NNNN-problem-name]/ already exists. If it does, instruct Claude to use _daily_YYYYMMDD suffix for solution and test files instead of overwriting.",
+      "status": "completed",
+      "notes": "Implemented as 'Check for duplicate problem' step in the workflow. The IS_DUPLICATE flag is passed to build-prompt.py which adjusts file naming instructions in the prompt.",
+      "depends_on": [3]
+    },
+    {
+      "id": 5,
+      "title": "Handle premium problem detection and issue creation",
+      "description": "Logic within the workflow to detect isPaidOnly=true from fetched problem data, skip solution generation, and create a GitHub issue titled 'Daily Challenge Skipped: Premium Problem - [Title]' with problem number, title, and date.",
+      "status": "completed",
+      "notes": "Implemented as 'Handle premium problem' step. All subsequent steps have if: is_premium != 'true' guard.",
+      "depends_on": [3]
+    },
+    {
+      "id": 6,
+      "title": "Validate workflow end-to-end",
+      "description": "Review the complete workflow for correctness: verify GraphQL queries work, prompt template produces expected output structure, workflow YAML syntax is valid, permissions are correct, and all edge cases (premium, duplicate, test failure) are handled.",
+      "status": "completed",
+      "notes": "Validated via live GitHub Actions run. Fixed three issues during validation: added mode: 'agent' for workflow_dispatch, enabled PR creation permissions, and removed redundant commit/push step since claude-code-action handles git operations in agent mode.",
+      "depends_on": [3, 4, 5]
+    }
+  ]
+}
