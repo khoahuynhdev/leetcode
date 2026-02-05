@@ -112,6 +112,7 @@ jobs:
         if: steps.fetch.outputs.is_premium != 'true'
         uses: anthropics/claude-code-action@beta
         with:
+          mode: 'agent'
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           direct_prompt: |
             Read the file `prompt.txt` in the repository root. It contains a LeetCode problem
