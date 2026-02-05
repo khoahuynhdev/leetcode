@@ -168,10 +168,19 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+          # Sync with remote — claude-code-action may have already committed and pushed
+          git fetch origin "$BRANCH_NAME" 2>/dev/null \
+            && git rebase "origin/$BRANCH_NAME" || true
+
+          # Stage only the problem directory; commit only if there are new changes
           dir="problems/${{ steps.fetch.outputs.dir_name }}"
           git add "$dir/"
-          git commit -m "feat(daily): add ${{ steps.fetch.outputs.number }}-${{ steps.fetch.outputs.slug }}"
-          git push -u origin "$BRANCH_NAME"
+          if git diff --cached --quiet; then
+            echo "No additional changes to commit (claude-code-action already pushed)"
+          else
+            git commit -m "feat(daily): add ${{ steps.fetch.outputs.number }}-${{ steps.fetch.outputs.slug }}"
+            git push -u origin "$BRANCH_NAME"
+          fi
 
       - name: Create pull request
         if: steps.fetch.outputs.is_premium != 'true'
