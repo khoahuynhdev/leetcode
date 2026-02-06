@@ -127,7 +127,6 @@ jobs:
 
             Do NOT use delimiters or print file contents to stdout. Create the actual files.
             Do NOT run any git commands. Do NOT create commits or branches.
-          timeout_minutes: "30"
 
       - name: Run tests
         if: steps.fetch.outputs.is_premium != 'true'
