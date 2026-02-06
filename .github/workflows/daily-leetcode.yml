@@ -110,9 +110,8 @@ jobs:
 
       - name: Generate solution with Claude
         if: steps.fetch.outputs.is_premium != 'true'
-        uses: anthropics/claude-code-action@beta
+        uses: anthropics/claude-code-action@v1
         with:
-          mode: 'agent'
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
             Read the file `prompt.txt` in the repository root. It contains a LeetCode problem
@@ -127,7 +126,6 @@ jobs:
 
             Do NOT use delimiters or print file contents to stdout. Create the actual files.
             Do NOT run any git commands. Do NOT create commits or branches.
-          timeout_minutes: "30"
 
       - name: Run tests
         if: steps.fetch.outputs.is_premium != 'true'
