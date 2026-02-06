@@ -162,8 +162,22 @@ jobs:
             fi
           fi
 
-      - name: Commit and push solution
+      - name: Check for existing PR
         if: steps.fetch.outputs.is_premium != 'true'
+        id: existing_pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pr_url=$(gh pr list --head "$BRANCH_NAME" --state open --json url --jq '.[0].url // empty')
+          if [ -n "$pr_url" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::PR already exists for this branch: $pr_url — skipping commit and PR creation."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push solution
+        if: steps.fetch.outputs.is_premium != 'true' && steps.existing_pr.outputs.exists != 'true'
         run: |
           dir="problems/${{ steps.fetch.outputs.dir_name }}"
           if [ ! -d "$dir" ] || [ -z "$(ls -A "$dir" 2>/dev/null)" ]; then
@@ -177,7 +191,7 @@ jobs:
           git push -u origin "$BRANCH_NAME"
 
       - name: Create pull request
-        if: steps.fetch.outputs.is_premium != 'true'
+        if: steps.fetch.outputs.is_premium != 'true' && steps.existing_pr.outputs.exists != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
