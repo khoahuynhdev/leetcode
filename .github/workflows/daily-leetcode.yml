@@ -162,6 +162,20 @@ jobs:
             fi
           fi
 
+      - name: Commit and push solution
+        if: steps.fetch.outputs.is_premium != 'true'
+        run: |
+          dir="problems/${{ steps.fetch.outputs.dir_name }}"
+          if [ ! -d "$dir" ] || [ -z "$(ls -A "$dir" 2>/dev/null)" ]; then
+            echo "::error::No solution files to commit"
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$dir"
+          git commit -m "feat: add solution for ${{ steps.fetch.outputs.number }}. ${{ steps.fetch.outputs.title }}"
+          git push -u origin "$BRANCH_NAME"
+
       - name: Create pull request
         if: steps.fetch.outputs.is_premium != 'true'
         env:
