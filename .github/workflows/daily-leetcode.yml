@@ -126,6 +126,9 @@ jobs:
 
             Do NOT use delimiters or print file contents to stdout. Create the actual files.
             Do NOT run any git commands. Do NOT create commits or branches.
+          claude_args: |
+            --max-turns 20
+            --allowedTools "Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash(git:*),Bash(go:*),Bash(python3:*),Bash(python:*),Bash(bash:*)"
 
       - name: Run tests
         if: steps.fetch.outputs.is_premium != 'true'
