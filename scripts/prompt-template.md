@@ -65,6 +65,7 @@ Space Complexity: O(...)
 ### Output Section 2: solution.go
 
 Write a correct, clean Go solution. Requirements:
+
 - Use `package main`
 - Define any needed types (TreeNode, ListNode, etc.) inline in the file
 - Include a brief comment at the top explaining the approach
@@ -81,10 +82,12 @@ Write a correct, clean Go solution. Requirements:
 ### Output Section 3: solution_test.go
 
 Write table-driven tests in Go. Requirements:
+
 - Use `package main`
 - Extract ALL examples from the problem description as test cases
 - Add at least 2 additional edge case tests beyond the examples
 - Use descriptive test names like "example 1: description", "edge case: empty input"
+- Ensure test cases are correct by verifying against your solution
 - Follow the testing pattern below
 - {{TEST_FILE_NAMING_NOTE}}
 
@@ -94,7 +97,7 @@ Write table-driven tests in Go. Requirements:
 ---TESTS_END---
 ```
 
-## Important Rules
+## **Important Rules**
 
 1. The solution MUST compile and pass all generated tests.
 2. Aim for an optimal or near-optimal time complexity solution.
