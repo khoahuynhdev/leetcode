@@ -60,4 +60,5 @@ Space Complexity: O(1) - only using constant extra space (excluding input)
 - Using 2 pointers to move around the left and right boundaries of the window helps efficiently find the longest valid subarray.
 - What i did not understand at first is the extending and shrinking of the window. The right pointer is extended as long as the condition holds, and when it breaks, the left pointer is moved to try and restore the condition.
 
-- !> [!IMPORTANT] minimum elements to remove = total elements - maximum elements to keep in a valid balanced subarray.
+> [!IMPORTANT]
+> minimum elements to remove = total elements - maximum elements to keep in a valid balanced subarray.
