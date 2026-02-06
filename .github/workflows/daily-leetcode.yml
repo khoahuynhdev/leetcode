@@ -178,6 +178,8 @@ jobs:
           fi
 
       - name: Commit and push solution
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: steps.fetch.outputs.is_premium != 'true' && steps.existing_pr.outputs.exists != 'true'
         run: |
           dir="problems/${{ steps.fetch.outputs.dir_name }}"
