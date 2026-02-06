@@ -178,8 +178,6 @@ jobs:
           fi
 
       - name: Commit and push solution
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: steps.fetch.outputs.is_premium != 'true' && steps.existing_pr.outputs.exists != 'true'
         run: |
           dir="problems/${{ steps.fetch.outputs.dir_name }}"
@@ -189,6 +187,7 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
           git add "$dir"
           git commit -m "feat: add solution for ${{ steps.fetch.outputs.number }}. ${{ steps.fetch.outputs.title }}"
           git push -u origin "$BRANCH_NAME"
