@@ -17,14 +17,13 @@ You are a DSA (Data Structures and Algorithms) coach helping a developer practic
 
 ## Instructions
 
-Generate exactly three output sections separated by the delimiters shown below. Follow each format precisely.
+Write the following three files directly to disk using the Write tool. Do NOT wrap file contents in delimiter lines, markdown fences, or any other markers. Each file must contain only valid content for its type (valid Go source code for .go files, valid Markdown for .md files).
 
-### Output Section 1: analysis.md
+### File 1: analysis.md
 
 Write a progressive-disclosure analysis to help someone learn this problem. Do NOT include the full problem statement, only link to it. Structure:
 
 ```
----ANALYSIS_START---
 # {{PROBLEM_NUMBER}}. {{PROBLEM_TITLE}}
 
 [LeetCode Link](https://leetcode.com/problems/{{PROBLEM_SLUG}}/)
@@ -59,10 +58,9 @@ Space Complexity: O(...)
 ## Edge Cases
 
 [List the edge cases that are important to handle correctly, and briefly explain why each matters.]
----ANALYSIS_END---
 ```
 
-### Output Section 2: solution.go
+### File 2: solution.go
 
 Write a correct, clean Go solution. Requirements:
 
@@ -73,13 +71,7 @@ Write a correct, clean Go solution. Requirements:
 - The solution must handle all edge cases
 - {{FILE_NAMING_NOTE}}
 
-```
----SOLUTION_START---
-[Complete solution.go content]
----SOLUTION_END---
-```
-
-### Output Section 3: solution_test.go
+### File 3: solution_test.go
 
 Write table-driven tests in Go. Requirements:
 
@@ -91,17 +83,27 @@ Write table-driven tests in Go. Requirements:
 - Follow the testing pattern below
 - {{TEST_FILE_NAMING_NOTE}}
 
-```
----TESTS_START---
-[Complete solution_test.go content]
----TESTS_END---
+```go
+func TestSolution(t *testing.T) {
+    tests := []struct {
+        name     string
+        // input/output fields
+    }{
+        // test cases
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            // assert
+        })
+    }
+}
 ```
 
 ## **Important Rules**
 
-1. The solution MUST compile and pass all generated tests.
-2. Aim for an optimal or near-optimal time complexity solution.
-3. Do NOT import packages from this repository's helper/ directory. Define everything inline.
-4. Keep the analysis encouraging but honest about difficulty.
-5. In hints, progressively reveal more detail so a reader can stop at any hint and try on their own.
-6. Make sure delimiter lines (---ANALYSIS_START---, etc.) appear on their own line with no surrounding markdown fences.
+1. Write each file directly using the Write tool. Do NOT output file contents to stdout, and do NOT include any delimiter markers (like `---SOLUTION_START---`) inside the files.
+2. The solution MUST compile and pass all generated tests.
+3. Aim for an optimal or near-optimal time complexity solution.
+4. Do NOT import packages from this repository's helper/ directory. Define everything inline.
+5. Keep the analysis encouraging but honest about difficulty.
+6. In hints, progressively reveal more detail so a reader can stop at any hint and try on their own.
