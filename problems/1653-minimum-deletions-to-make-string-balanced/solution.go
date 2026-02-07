@@ -1,4 +1,3 @@
----SOLUTION_START---
 package main
 
 // Dynamic Programming approach:
@@ -30,4 +29,3 @@ func min(a, b int) int {
 	}
 	return b
 }
----SOLUTION_END---

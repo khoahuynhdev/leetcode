@@ -1,4 +1,3 @@
----TESTS_START---
 package main
 
 import "testing"
@@ -70,4 +69,3 @@ func TestMinimumDeletions(t *testing.T) {
 		})
 	}
 }
----TESTS_END---
