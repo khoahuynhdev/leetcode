@@ -1,6 +1,6 @@
 ---
 title: Submit LeetCode Solution via Script and GitHub Action
-status: draft
+status: accepted
 created: 2026-02-09
 author: khoahd
 tags: [leetcode, github-actions, automation, api]
@@ -156,13 +156,13 @@ on:
   workflow_dispatch:
     inputs:
       problem_number:
-        description: 'Problem number (e.g. 1382)'
+        description: "Problem number (e.g. 1382)"
         required: true
         type: string
       solution_file:
-        description: 'Solution file to submit (default: solution.go)'
+        description: "Solution file to submit (default: solution.go)"
         required: false
-        default: 'solution.go'
+        default: "solution.go"
         type: string
 ```
 
@@ -181,18 +181,20 @@ That's it. The script handles everything. The workflow is intentionally thin —
 ## File changes summary
 
 New files:
+
 - `scripts/submit.sh` — the submission script (~150-200 lines of bash)
 - `.github/workflows/submit-leetcode.yml` — the dispatch workflow (~30 lines)
 
 Modified files:
+
 - `.gitignore` — add `.leetcode-cache/` entry
 
 ## Constraints and edge cases
 
-The script only supports `golang` as the language. There is no need to make it language-configurable since this repo is Go-only.
+- The script only supports `golang` as the language. There is no need to make it language-configurable since this repo is Go-only.
 
-If the problem directory contains no solution file (or the `--file` target doesn't exist), the script fails with exit code 2 before making any API calls.
+- If the problem directory contains no solution file (or the `--file` target doesn't exist), the script fails with exit code 2 before making any API calls.
 
-If the GraphQL query for the question ID returns no results (e.g. the slug is wrong), the script fails with exit code 4 and suggests checking the directory name.
+- If the GraphQL query for the question ID returns no results (e.g. the slug is wrong), the script fails with exit code 4 and suggests checking the directory name.
 
-The script never modifies any solution files or commits anything. It is purely a read-and-submit tool.
+- The script never modifies any solution files or commits anything. It is purely a read-and-submit tool.
