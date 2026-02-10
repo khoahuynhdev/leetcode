@@ -129,7 +129,7 @@ jobs:
           claude_args: |
             --model opus
             --max-turns 20
-            --allowedTools "Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash(git:*),Bash(go:*),Bash(python3:*),Bash(python:*),Bash(bash:*)"
+            --allowedTools "Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash"
 
       - name: Run tests
         if: steps.fetch.outputs.is_premium != 'true'
