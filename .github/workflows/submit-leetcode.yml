@@ -1,0 +1,28 @@
+name: Submit LeetCode Solution
+
+on:
+  workflow_dispatch:
+    inputs:
+      problem_number:
+        description: "Problem number (e.g. 1382)"
+        required: true
+        type: string
+      solution_file:
+        description: "Solution file to submit (default: solution.go)"
+        required: false
+        default: "solution.go"
+        type: string
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Submit solution
+        env:
+          LEETCODE_SESSION: ${{ secrets.LEETCODE_SESSION }}
+          LEETCODE_CSRF: ${{ secrets.LEETCODE_CSRF }}
+        run: bash scripts/submit.sh "${{ inputs.problem_number }}" --file "${{ inputs.solution_file }}"
