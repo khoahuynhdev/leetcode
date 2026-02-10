@@ -131,6 +131,63 @@ echo "Slug:      $SLUG" >&2
 echo "" >&2
 
 # ---------------------------------------------------------------------------
+# Minify solution for LeetCode submission
+# ---------------------------------------------------------------------------
+
+# LeetCode provides these types in its Go environment. Submitting them
+# causes "type redeclared" compile errors.
+LEETCODE_TYPES="TreeNode|ListNode|Node"
+
+minify_solution() {
+  local code="$1"
+
+  # Strip package declaration
+  code=$(echo "$code" | sed '/^package /d')
+
+  # Strip LeetCode-provided struct definitions and preceding doc comments.
+  # Handles both single-line (// ...) and block (/* ... */) comments that
+  # sit directly above "type <Name> struct {".
+  code=$(echo "$code" | awk -v types="$LEETCODE_TYPES" '
+    BEGIN { skip = 0; buf_count = 0 }
+
+    # Accumulate comment lines and blank lines that might precede a type definition
+    (/^[[:space:]]*(\/\/|\/\*|\*|\*\/)/ || /^[[:space:]]*$/) && skip == 0 {
+      buf[buf_count++] = $0
+      next
+    }
+
+    # If we hit a LeetCode type definition, discard buffered comments and skip the struct body
+    /^type[[:space:]]+('"$LEETCODE_TYPES"')[[:space:]]+struct[[:space:]]*\{/ {
+      buf_count = 0
+      skip = 1
+      next
+    }
+
+    # While skipping a struct body, wait for the closing brace
+    skip == 1 {
+      if ($0 ~ /^\}/) skip = 0
+      next
+    }
+
+    # Flush any buffered lines (they were not before a LeetCode type)
+    {
+      for (i = 0; i < buf_count; i++) print buf[i]
+      buf_count = 0
+      print
+    }
+
+    END {
+      for (i = 0; i < buf_count; i++) print buf[i]
+    }
+  ')
+
+  # Collapse leading blank lines
+  code=$(echo "$code" | sed '/./,$!d')
+
+  echo "$code"
+}
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
@@ -220,7 +277,8 @@ fi
 # Read solution and submit
 # ---------------------------------------------------------------------------
 
-TYPED_CODE=$(<"$SOLUTION_PATH")
+RAW_CODE=$(<"$SOLUTION_PATH")
+TYPED_CODE=$(minify_solution "$RAW_CODE")
 
 echo "Submitting to LeetCode..." >&2
 

@@ -128,6 +128,16 @@
       "spec": "specs/submit-leetcode.md",
       "notes": "Tested against problem 1382. Full flow works: directory resolution, slug derivation, question ID fetch + cache write, submission POST, polling, and result reporting. Got 'Compile Error' due to solution file having inline TreeNode definition that conflicts with LeetCode's environment — script behavior is correct.",
       "depends_on": [13]
+    },
+    {
+      "id": 16,
+      "title": "Minify solution.go before submission",
+      "description": "Add a preprocessing step in submit.sh that strips LeetCode-incompatible boilerplate from the solution file before submitting. Remove 'package main/solution' declaration, inline struct definitions that LeetCode provides (TreeNode, ListNode, Node, etc.), and any imports that become unused after removal. The minified code is used only for the typed_code payload — the original file is never modified. This fixes the Compile Error seen in e2e testing where inline TreeNode definitions conflict with LeetCode's environment.",
+      "status": "completed",
+      "spec": "specs/submit-leetcode.md",
+      "files": ["scripts/submit.sh"],
+      "notes": "Strips package declaration, LeetCode-provided struct types (TreeNode, ListNode, Node) and their preceding doc comments. Verified with e2e test: problem 1382 went from Compile Error to Accepted (17/17 tests).",
+      "depends_on": [13]
     }
   ]
 }
