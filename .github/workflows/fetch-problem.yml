@@ -4,9 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       problem_url:
-        description: "LeetCode problem URL"
-        required: true
+        description: "LeetCode problem URL (leave empty for today's daily challenge)"
+        required: false
         type: string
+        default: ""
       force_refetch:
         description: "Force re-fetch if problem.md exists"
         required: false
