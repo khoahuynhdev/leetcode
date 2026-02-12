@@ -1,0 +1,215 @@
+name: "Fetch LeetCode Problem"
+description: "Fetches a LeetCode problem and stores it as problem.md with metadata"
+author: "khoahuynhdev"
+
+inputs:
+  problem_url:
+    description: "LeetCode problem URL (leave empty for daily challenge)"
+    required: false
+    default: ""
+  force_refetch:
+    description: "Force re-fetch even if problem.md exists (updates fetched_at)"
+    required: false
+    default: "false"
+
+outputs:
+  dir_name:
+    description: "Problem directory name (e.g., 0001-two-sum)"
+    value: ${{ steps.metadata.outputs.dir_name }}
+  is_premium:
+    description: "Whether the problem is premium-only (true/false)"
+    value: ${{ steps.metadata.outputs.is_premium }}
+  problem_md_path:
+    description: "Path to problem.md file"
+    value: ${{ steps.metadata.outputs.problem_md_path }}
+  number:
+    description: "Zero-padded problem number (4 digits)"
+    value: ${{ steps.metadata.outputs.number }}
+  frontend_id:
+    description: "LeetCode frontend ID (not zero-padded)"
+    value: ${{ steps.metadata.outputs.frontend_id }}
+  title:
+    description: "Problem title"
+    value: ${{ steps.metadata.outputs.title }}
+  slug:
+    description: "Problem slug"
+    value: ${{ steps.metadata.outputs.slug }}
+  difficulty:
+    description: "Problem difficulty (Easy/Medium/Hard)"
+    value: ${{ steps.metadata.outputs.difficulty }}
+  topics:
+    description: "Comma-separated list of topics"
+    value: ${{ steps.metadata.outputs.topics }}
+  ac_rate:
+    description: "Acceptance rate percentage"
+    value: ${{ steps.metadata.outputs.ac_rate }}
+  date:
+    description: "Problem date (YYYY-MM-DD)"
+    value: ${{ steps.metadata.outputs.date }}
+  date_compact:
+    description: "Problem date (YYYYMMDD)"
+    value: ${{ steps.metadata.outputs.date_compact }}
+  already_exists:
+    description: "Whether problem.md already existed (true/false)"
+    value: ${{ steps.check.outputs.exists }}
+  was_fetched:
+    description: "Whether API was called (true/false)"
+    value: ${{ steps.fetch.outputs.fetched }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Python dependencies
+      shell: bash
+      run: |
+        pip3 install html2text pyyaml 2>/dev/null || echo "Warning: Some Python packages not installed"
+
+    - name: Determine directory name (preliminary)
+      id: prelim
+      shell: bash
+      run: |
+        problem_url="${{ inputs.problem_url }}"
+
+        if [ -n "$problem_url" ]; then
+          # Extract slug from URL
+          slug=$(echo "$problem_url" | sed -E 's|.*/problems/([^/]+).*|\1|')
+          echo "slug=$slug" >> "$GITHUB_OUTPUT"
+          echo "is_daily=false" >> "$GITHUB_OUTPUT"
+        else
+          echo "slug=" >> "$GITHUB_OUTPUT"
+          echo "is_daily=true" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Check if problem.md already exists
+      id: check
+      shell: bash
+      run: |
+        # For daily challenges, we don't know the slug yet, so check will happen after fetch
+        # For specific URLs, we can check now
+
+        if [ -n "${{ steps.prelim.outputs.slug }}" ]; then
+          # Find problem directory by slug pattern
+          dir_pattern="problems/*-${{ steps.prelim.outputs.slug }}"
+          matching_dirs=($(compgen -G "$dir_pattern" || true))
+
+          if [ ${#matching_dirs[@]} -gt 0 ]; then
+            dir_name="${matching_dirs[0]#problems/}"
+            problem_md="problems/$dir_name/problem.md"
+
+            if [ -f "$problem_md" ]; then
+              echo "exists=true" >> "$GITHUB_OUTPUT"
+              echo "dir_name=$dir_name" >> "$GITHUB_OUTPUT"
+              echo "problem_md_path=$problem_md" >> "$GITHUB_OUTPUT"
+              echo "::notice::Problem directory exists: $dir_name"
+            else
+              echo "exists=false" >> "$GITHUB_OUTPUT"
+              echo "dir_name=$dir_name" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "dir_name=" >> "$GITHUB_OUTPUT"
+          fi
+        else
+          # Daily challenge - defer check to after fetch
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+          echo "dir_name=" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Fetch problem from LeetCode API
+      id: fetch
+      if: steps.check.outputs.exists != 'true' || inputs.force_refetch == 'true'
+      shell: bash
+      run: |
+        set +e
+        bash scripts/fetch-problem.sh "${{ inputs.problem_url }}" > problem.json 2>fetch.log
+        exit_code=$?
+        set -e
+
+        cat fetch.log >&2
+
+        if [ $exit_code -eq 1 ]; then
+          echo "::error::Failed to fetch problem from LeetCode API after retries"
+          exit 1
+        fi
+
+        # Check for premium (exit code 2)
+        if [ $exit_code -eq 2 ]; then
+          echo "::warning::Premium problem detected"
+        fi
+
+        echo "fetched=true" >> "$GITHUB_OUTPUT"
+        echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
+
+    - name: Check if problem already exists (post-fetch for daily)
+      id: check_post
+      if: steps.fetch.outputs.fetched == 'true' && steps.check.outputs.exists != 'true'
+      shell: bash
+      run: |
+        # Now we have problem.json, determine directory name
+        frontend_id=$(jq -r '.questionFrontendId' problem.json)
+        padded_id=$(printf "%04d" "$frontend_id")
+        slug=$(jq -r '.titleSlug' problem.json)
+        dir_name="${padded_id}-${slug}"
+        problem_md="problems/$dir_name/problem.md"
+
+        echo "dir_name=$dir_name" >> "$GITHUB_OUTPUT"
+        echo "problem_md_path=$problem_md" >> "$GITHUB_OUTPUT"
+
+        if [ -f "$problem_md" ] && [ "${{ inputs.force_refetch }}" != "true" ]; then
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+          echo "::notice::Problem.md already exists at $problem_md"
+        else
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Convert JSON to Markdown
+      id: convert
+      if: steps.fetch.outputs.fetched == 'true' && (steps.check_post.outputs.exists != 'true' || inputs.force_refetch == 'true')
+      shell: bash
+      run: |
+        dir_name="${{ steps.check_post.outputs.dir_name }}"
+        problem_md="problems/$dir_name/problem.md"
+
+        python3 scripts/convert-problem-json-to-md.py problem.json "$problem_md"
+
+        echo "::notice::Created $problem_md"
+
+    - name: Extract and output metadata
+      id: metadata
+      shell: bash
+      run: |
+        # Determine which path to use
+        if [ -n "${{ steps.check_post.outputs.dir_name }}" ]; then
+          dir_name="${{ steps.check_post.outputs.dir_name }}"
+          problem_md="${{ steps.check_post.outputs.problem_md_path }}"
+        elif [ -n "${{ steps.check.outputs.dir_name }}" ]; then
+          dir_name="${{ steps.check.outputs.dir_name }}"
+          problem_md="${{ steps.check.outputs.problem_md_path }}"
+        else
+          echo "::error::Could not determine problem directory"
+          exit 1
+        fi
+
+        # Read metadata from problem.md or problem.json
+        if [ -f "$problem_md" ]; then
+          # Parse from problem.md
+          python3 scripts/parse-problem-md.py "$problem_md" > problem.json
+        fi
+
+        # Extract all output fields
+        frontend_id=$(jq -r '.questionFrontendId' problem.json)
+        padded_id=$(printf "%04d" "$frontend_id")
+        slug=$(jq -r '.titleSlug' problem.json)
+
+        echo "dir_name=$dir_name" >> "$GITHUB_OUTPUT"
+        echo "problem_md_path=$problem_md" >> "$GITHUB_OUTPUT"
+        echo "is_premium=$(jq -r '.isPaidOnly' problem.json)" >> "$GITHUB_OUTPUT"
+        echo "number=$padded_id" >> "$GITHUB_OUTPUT"
+        echo "frontend_id=$frontend_id" >> "$GITHUB_OUTPUT"
+        echo "title=$(jq -r '.title' problem.json)" >> "$GITHUB_OUTPUT"
+        echo "slug=$slug" >> "$GITHUB_OUTPUT"
+        echo "difficulty=$(jq -r '.difficulty' problem.json)" >> "$GITHUB_OUTPUT"
+        echo "topics=$(jq -r '[.topicTags[]] | join(", ")' problem.json)" >> "$GITHUB_OUTPUT"
+        echo "ac_rate=$(jq -r '.acRate | . * 100 | round / 100' problem.json)" >> "$GITHUB_OUTPUT"
+        echo "date=$(jq -r '.date' problem.json)" >> "$GITHUB_OUTPUT"
+        echo "date_compact=$(jq -r '.date | gsub("-"; "")' problem.json)" >> "$GITHUB_OUTPUT"

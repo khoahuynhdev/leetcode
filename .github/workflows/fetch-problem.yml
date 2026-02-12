@@ -1,0 +1,73 @@
+name: Fetch LeetCode Problem
+
+on:
+  workflow_dispatch:
+    inputs:
+      problem_url:
+        description: "LeetCode problem URL (leave empty for today's daily challenge)"
+        required: false
+        type: string
+        default: ""
+      force_refetch:
+        description: "Force re-fetch if problem.md exists"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip3 install html2text pyyaml
+
+      - name: Fetch problem
+        id: fetch
+        uses: ./.github/actions/fetch-leetcode-problem
+        with:
+          problem_url: ${{ inputs.problem_url }}
+          force_refetch: ${{ inputs.force_refetch }}
+
+      - name: Check if premium
+        if: steps.fetch.outputs.is_premium == 'true'
+        run: |
+          echo "::error::Cannot fetch premium problem: ${{ steps.fetch.outputs.title }}"
+          exit 1
+
+      - name: Commit problem.md
+        if: steps.fetch.outputs.was_fetched == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "problems/${{ steps.fetch.outputs.dir_name }}/problem.md"
+          git commit -m "feat: add problem metadata for ${{ steps.fetch.outputs.number }}. ${{ steps.fetch.outputs.title }}"
+          git push
+
+      - name: Summary
+        run: |
+          echo "## Problem Fetched Successfully" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Number:** ${{ steps.fetch.outputs.number }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Title:** ${{ steps.fetch.outputs.title }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Difficulty:** ${{ steps.fetch.outputs.difficulty }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Topics:** ${{ steps.fetch.outputs.topics }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Link:** [${{ steps.fetch.outputs.slug }}](https://leetcode.com/problems/${{ steps.fetch.outputs.slug }}/)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **File:** \`problems/${{ steps.fetch.outputs.dir_name }}/problem.md\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.fetch.outputs.already_exists }}" == "true" ]; then
+            echo "ℹ️ **Note:** Problem.md already existed. No API call was made." >> "$GITHUB_STEP_SUMMARY"
+          fi
