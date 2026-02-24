@@ -14,3 +14,17 @@ Pythonic goals:
 
 def is_anagram(s: str, t: str) -> bool:
     pass
+
+
+if __name__ == "__main__":
+    assert is_anagram("anagram", "nagaram") == True
+    assert is_anagram("rat", "car") == False
+    assert is_anagram("", "") == True
+    assert is_anagram("a", "a") == True
+    assert is_anagram("a", "b") == False
+    assert is_anagram("ab", "a") == False
+    assert is_anagram("aacc", "ccac") == False
+    assert is_anagram("listen", "silent") == True
+    assert is_anagram("hello", "llohe") == True
+    assert is_anagram("aabbcc", "abcabc") == True
+    print("All tests passed!")

@@ -9,21 +9,25 @@ would have exactly one solution, and you may not use the same element twice.
 Pythonic goals:
 - Use enumerate() for index + value iteration
 - Use dict as a hash map (not defaultdict — simple lookup is enough here)
-- One-pass approach
+- One-pass approach with walrus operator := for clean complement check
 """
-
 
 
 def two_sum(nums: list[int], target: int) -> list[int]:
-    dtc = {}
+    seen = {}
     for i, v in enumerate(nums):
-        if (target - v) in dtc:
-            return [dtc[target - v], i]
-        else:
-            dtc[v] = i
+        if (complement := target - v) in seen:
+            return [seen[complement], i]
+        seen[v] = i
     return []
 
-"""
-The key changes: enumerate(nums) gives you index i and value v. The dict stores {value: index} so you can look up whether the complement target - v has been seen. The in check happens before any bracket access, so no KeyError.
-Also notice the dict maps v -> i (not target - v -> i). Storing the complement as the key works too, but storing the actual value is more readable — you look up "have I seen the number I need?" rather than "have I seen someone who needs me?"
-"""
+
+if __name__ == "__main__":
+    assert two_sum([2, 7, 11, 15], 9) == [0, 1]
+    assert two_sum([3, 2, 4], 6) == [1, 2]
+    assert two_sum([3, 3], 6) == [0, 1]
+    assert two_sum([-1, -2, -3, -4, -5], -8) == [2, 4]
+    assert two_sum([0, 4, 3, 0], 0) == [0, 3]
+    assert two_sum([1, 5, 8, 3], 4) == [0, 3]
+    assert two_sum([1000000, 500000, -1500000], -1000000) == [1, 2]
+    print("All tests passed!")

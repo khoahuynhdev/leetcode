@@ -18,3 +18,20 @@ Pythonic goals:
 
 def is_palindrome(s: str) -> bool:
     pass
+
+
+if __name__ == "__main__":
+    assert is_palindrome("A man, a plan, a canal: Panama") == True
+    assert is_palindrome("race a car") == False
+    assert is_palindrome(" ") == True
+    assert is_palindrome("") == True
+    assert is_palindrome("a") == True
+    assert is_palindrome(".,!?") == True
+    assert is_palindrome("0P") == False
+    assert is_palindrome("121") == True
+    assert is_palindrome("12321") == True
+    assert is_palindrome("Aa") == True
+    assert is_palindrome("Ab") == False
+    assert is_palindrome("a1b2b1a") == True
+    assert is_palindrome("a1b2c1a") == False
+    print("All tests passed!")

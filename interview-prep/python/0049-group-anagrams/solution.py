@@ -15,3 +15,21 @@ Pythonic goals:
 
 def group_anagrams(strs: list[str]) -> list[list[str]]:
     pass
+
+
+if __name__ == "__main__":
+    def check(result, expected):
+        """Order-independent comparison: sort inner lists and outer list."""
+        normalize = lambda groups: sorted(sorted(g) for g in groups)
+        assert normalize(result) == normalize(expected), f"got {result}, want {expected}"
+
+    check(group_anagrams(["eat", "tea", "tan", "ate", "nat", "bat"]),
+          [["bat"], ["nat", "tan"], ["ate", "eat", "tea"]])
+    check(group_anagrams([""]), [[""]])
+    check(group_anagrams(["a"]), [["a"]])
+    check(group_anagrams(["", ""]), [["", ""]])
+    check(group_anagrams(["abc", "bca", "cab", "xyz", "zyx"]),
+          [["abc", "bca", "cab"], ["xyz", "zyx"]])
+    check(group_anagrams(["a", "b", "c"]), [["a"], ["b"], ["c"]])
+    check(group_anagrams(["aaa", "aaa", "aaa"]), [["aaa", "aaa", "aaa"]])
+    print("All tests passed!")
