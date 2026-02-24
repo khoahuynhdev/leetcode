@@ -11,10 +11,13 @@ Pythonic goals:
 - Compare with your Go [26]byte key approach — Python equivalent would be
   tuple of counts, but sorted() is more idiomatic here
 """
-
+from collections import defaultdict
 
 def group_anagrams(strs: list[str]) -> list[list[str]]:
-    pass
+    groups = defaultdict(list)
+    for s in strs:
+        groups[tuple(sorted(s))].append(s)
+    return list(groups.values())
 
 
 if __name__ == "__main__":
