@@ -45,6 +45,7 @@ class Student:
     name: str
     student_id: int
     grades: list[float] = field(default_factory=list)
+    country: str = field(init=False, default="Unknown", compare=False)
 
     # property for GPA
     @property
@@ -53,12 +54,30 @@ class Student:
 
     def __hash__(self):
         return hash(self.student_id)
+    
+    def __eq__(self, other):
+        return isinstance(other, Student) and self.student_id == other.student_id
+
+
 
 
 # Part 2: Nationality subclasses + factory
-# TODO: implement
+class ChineseStudent(Student):
+    country = "China"
+class AmericanStudent(Student):
+    country = "America"
+class IndianStudent(Student):
+    country = "India"
 
-
+def create_student(name: str, student_id: int, grades: list[float]) -> Student:
+    first_name, last_name = name.rsplit(" ", 1)
+    if last_name in ("Li", "Wang", "Zhang", "Chen", "Liu"):
+        return ChineseStudent(name, student_id, grades)
+    if last_name in ("Smith", "Johnson", "Williams", "Brown", "Jones"):
+        return AmericanStudent(name, student_id, grades)
+    if last_name in ("Singh", "Kumar", "Patel", "Sharma", "Gupta"):
+        return IndianStudent(name, student_id, grades)
+    return Student(name, student_id, grades)  # default to base Student for unknown last names
 # Part 3: Sorting helpers
 # TODO: implement
 
@@ -125,39 +144,65 @@ if __name__ == "__main__":
     print("Part 2 passed!")
 
     # ── Part 3: Multi-criteria sorting ──
+    # Uses special characters, accented names, and Mandarin names to test
+    # that sorting handles Unicode properly. Python's default str comparison
+    # uses Unicode codepoints, so accented chars sort AFTER ASCII z.
+    # For locale-aware sorting you'd need locale.strxfrm as the key,
+    # but for this exercise, consistent codepoint ordering is fine.
 
     students = [
-        Student("Charlie Brown", 105, [3.5, 3.5]),       # GPA 3.5
-        Student("Alice Zhang", 101, [4.0, 3.8]),          # GPA 3.9
-        Student("Bob Kumar", 103, [3.9, 3.9]),            # GPA 3.9
-        Student("Diana Smith", 102, [2.5, 3.0]),          # GPA 2.75
-        Student("Eve Li", 104, [3.5, 3.5]),               # GPA 3.5
+        Student("Zoë Müller", 110, [3.5, 3.5]),          # GPA 3.5
+        Student("Åbjørn Dahl", 106, [3.9, 3.9]),         # GPA 3.9
+        Student("Núñez García", 108, [3.0, 3.0]),         # GPA 3.0
+        Student("Élana Dubois", 107, [3.9, 3.9]),         # GPA 3.9
+        Student("Zeke Brown", 105, [3.5, 3.5]),           # GPA 3.5
+        Student("Abe Lincoln", 101, [4.0, 4.0]),          # GPA 4.0
+        Student("Nubia Santos", 103, [3.0, 3.0]),         # GPA 3.0
+        Student("Eloise Park", 102, [2.5, 3.0]),          # GPA 2.75
+        Student("王明 Wang", 109, [3.8, 3.8]),             # GPA 3.8
+        Student("李华 Li", 104, [3.5, 3.5]),               # GPA 3.5
     ]
 
-    # sort_by_name: alphabetical
+    # sort_by_name: Unicode codepoint order
+    # ASCII letters (A-Z) come before accented (À, É, Å, etc.) and CJK (王, 李)
     by_name = sort_by_name(students)
     names = [s.name for s in by_name]
-    assert names == ["Alice Zhang", "Bob Kumar", "Charlie Brown", "Diana Smith", "Eve Li"], \
-        f"by name: {names}"
+    assert names == [
+        "Abe Lincoln",       # A
+        "Eloise Park",       # E
+        "Nubia Santos",      # N
+        "Núñez García",      # N + ú (U+00FA, after ASCII)
+        "Zeke Brown",        # Z
+        "Zoë Müller",        # Z + o + ë (U+00EB)
+        "Åbjørn Dahl",       # Å (U+00C5, after ASCII Z)
+        "Élana Dubois",      # É (U+00C9)
+        "李华 Li",            # CJK U+674E
+        "王明 Wang",          # CJK U+738B
+    ], f"by name: {names}"
 
-    # sort_by_gpa: descending GPA, ties broken by name ascending
+    # sort_by_gpa: descending GPA, ties broken by name ascending (same codepoint order)
     by_gpa = sort_by_gpa(students)
     gpa_names = [(s.name, round(s.gpa, 2)) for s in by_gpa]
     assert gpa_names == [
-        ("Alice Zhang", 3.9),
-        ("Bob Kumar", 3.9),
-        ("Charlie Brown", 3.5),
-        ("Eve Li", 3.5),
-        ("Diana Smith", 2.75),
+        ("Abe Lincoln", 4.0),           # GPA 4.0
+        ("Åbjørn Dahl", 3.9),           # GPA 3.9, Å > É in tiebreak? No — descending GPA, ascending name
+        ("Élana Dubois", 3.9),          # GPA 3.9, É (U+00C9) > Å (U+00C5)
+        ("王明 Wang", 3.8),              # GPA 3.8
+        ("Zeke Brown", 3.5),            # GPA 3.5, Z < Z (same)...
+        ("Zoë Müller", 3.5),            # GPA 3.5, Zo > Ze
+        ("李华 Li", 3.5),               # GPA 3.5, CJK after ASCII
+        ("Nubia Santos", 3.0),          # GPA 3.0, N < N + ú
+        ("Núñez García", 3.0),          # GPA 3.0
+        ("Eloise Park", 2.75),          # GPA 2.75
     ], f"by gpa: {gpa_names}"
 
-    # sort_by_id: ascending
+    # sort_by_id: ascending by student_id
     by_id = sort_by_id(students)
     ids = [s.student_id for s in by_id]
-    assert ids == [101, 102, 103, 104, 105], f"by id: {ids}"
+    assert ids == [101, 102, 103, 104, 105, 106, 107, 108, 109, 110], f"by id: {ids}"
 
     # Original list should NOT be modified
-    assert students[0].name == "Charlie Brown", "sorting should not mutate original"
+    assert students[0].name == "Zoë Müller", "sorting should not mutate original"
 
     print("Part 3 passed!")
     print("All tests passed!")
