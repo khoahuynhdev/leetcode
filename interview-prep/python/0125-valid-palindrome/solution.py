@@ -17,7 +17,8 @@ Pythonic goals:
 
 
 def is_palindrome(s: str) -> bool:
-    pass
+    filtered = [c.lower() for c in s if c.isalnum()]  # O(n) time and space, filter and map to lowercase
+    return filtered == filtered[::-1]  # This is the one-liner approach; it uses O(n) space
 
 
 if __name__ == "__main__":
