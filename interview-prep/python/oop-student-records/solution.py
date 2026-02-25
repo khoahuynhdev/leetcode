@@ -35,7 +35,7 @@ Pythonic goals:
 """
 
 from dataclasses import dataclass, field
-from typing import List
+import locale
 
 
 # Part 1: Student dataclass
@@ -79,7 +79,15 @@ def create_student(name: str, student_id: int, grades: list[float]) -> Student:
         return IndianStudent(name, student_id, grades)
     return Student(name, student_id, grades)  # default to base Student for unknown last names
 # Part 3: Sorting helpers
-# TODO: implement
+def sort_by_name(students: list[Student]) -> list[Student]:
+    return sorted(students,key=lambda std: locale.strxfrm(std.name))  # locale-aware sorting by name
+
+
+def sort_by_id(students: list[Student]) -> list[Student]:
+    return sorted(students, key=lambda std: std.student_id)  # ascending by student_id
+
+def sort_by_gpa(students: list[Student]) -> list[Student]:
+    return sorted(students, key=lambda std: (-std.gpa,std.name))  # ascending by student_id
 
 
 if __name__ == "__main__":
@@ -206,3 +214,20 @@ if __name__ == "__main__":
 
     print("Part 3 passed!")
     print("All tests passed!")
+
+
+"""
+** GPA sorting explanation: **
+ The trick is to use a tuple as the sort key. Python compares tuples element by element — if the first elements are equal, it moves to the second. So you pack (-gpa, name) into the tuple:
+
+  def sort_by_gpa(students: list[Student]) -> list[Student]:
+      return sorted(students, key=lambda std: (-std.gpa, std.name))
+
+  Negating the GPA gives you descending order, while the name stays in ascending order as the tiebreaker. Since sorted() is stable and tuples compare left-to-right, students with the same
+  GPA will be sub-sorted alphabetically by name.
+
+  The reverse=True approach you had before won't work here because it would reverse both criteria — you'd get descending GPA but also descending name, which isn't what you want. The
+  negate-in-tuple pattern is the standard way to mix ascending and descending in a single sorted() call. It works for any numeric field; for strings where you need descending order, you'd
+  have to do two separate stable sorts instead (sort by name ascending first, then sort by GPA descending — stability preserves the name order within ties).
+ 
+"""

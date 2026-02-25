@@ -74,6 +74,12 @@ Topics:
 - `@property` — computed attributes without getter/setter boilerplate.
 - Context managers: `__enter__` / `__exit__` or `@contextmanager` decorator. Less common in interviews but shows depth.
 
+#### Challenges
+
+Create and manage student records with a `Student` class that has name, ID, and grades. Implement methods to calculate GPA, compare students, and represent them as strings. Use `@dataclass` for simplicity.
+Student can be Chinese, American, or Indian. Implement a method to return the country of origin based on the name (e.g., names ending with "Li" are Chinese, "Smith" are American, "Singh" are Indian).
+Sorting student by many criteria: by name, by GPA, and by ID. Implement the necessary dunder methods to support sorting and equality checks.
+
 #### Exercise 1.3: OOP Data Structures
 
 Implement these as Python classes:

@@ -9,3 +9,7 @@ The fix replaces the remote URL with one that includes the GITHUB_TOKEN as
 an x-access-token — this is the standard pattern for authenticating git
 operations in GitHub Actions. I also removed the unnecessary GH_TOKEN env
 var from this step since it doesn't use gh.
+
+**2026-02-25**
+
+"Dunder" (short for "double underscore") refers to special methods in Python, also known as "magic methods," surrounded by double underscores (e.g., **init**, **str**). They define default behavior for user-defined objects, such as operator overloading, object initialization, and string representation
