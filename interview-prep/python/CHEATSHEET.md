@@ -345,3 +345,71 @@ s1 <= s2                        # is s1 a subset of s2?
 # Frozen set (immutable — can be used as dict key or in another set)
 fs = frozenset([1, 2, 3])
 ```
+
+---
+
+## Number Base Conversions
+
+### Int to String Representation
+
+```python
+# Binary (base 2)
+bin(42)             # '0b101010'
+f"{42:b}"           # '101010'       — no prefix
+f"{42:08b}"         # '00101010'     — zero-padded to 8 bits
+
+# Octal (base 8)
+oct(42)             # '0o52'
+f"{42:o}"           # '52'
+
+# Hexadecimal (base 16)
+hex(42)             # '0x2a'         — lowercase
+f"{42:x}"           # '2a'           — lowercase, no prefix
+f"{42:X}"           # '2A'           — uppercase
+f"{42:08x}"         # '0000002a'     — zero-padded to 8 hex digits
+
+# Arbitrary base (no built-in — roll your own)
+def to_base(n: int, base: int) -> str:
+    if n == 0:
+        return "0"
+    digits, neg = [], n < 0
+    n = abs(n)
+    while n:
+        digits.append("0123456789abcdefghijklmnopqrstuvwxyz"[n % base])
+        n //= base
+    return ("-" if neg else "") + "".join(reversed(digits))
+
+to_base(255, 16)    # 'ff'
+to_base(42, 5)      # '132'
+```
+
+### String to Int
+
+```python
+int('101010', 2)    # 42   — from binary
+int('52', 8)        # 42   — from octal
+int('2a', 16)       # 42   — from hex
+int('132', 5)       # 42   — from base 5
+
+# Auto-detect base from prefix (0b, 0o, 0x)
+int('0b101010', 0)  # 42
+int('0o52', 0)      # 42
+int('0x2a', 0)      # 42
+```
+
+### Base-to-Base Conversion
+
+```python
+# There's no direct base-to-base function. Go through int as the intermediate:
+binary_str = '101010'
+hex_str = f"{int(binary_str, 2):x}"     # '2a'  (bin → int → hex)
+oct_str = f"{int(binary_str, 2):o}"     # '52'  (bin → int → oct)
+```
+
+### Useful Bit Operations
+
+```python
+n.bit_length()          # number of bits needed: (42).bit_length() == 6
+n.bit_count()           # popcount (number of 1-bits): (42).bit_count() == 3  (Python 3.10+)
+bin(n).count('1')       # popcount fallback for older Python
+```
