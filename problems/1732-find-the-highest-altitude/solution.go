@@ -1,8 +1,8 @@
-package solution
+package main
 
 // intuition: you can do this
 // https://leetcode.com/problems/find-the-highest-altitude/?envType=study-plan-v2&envId=leetcode-75
-func largestAltitude(gain []int) int {
+func largestAltitudeStudyPlan(gain []int) int {
 	max := 0
 	gained := make([]int, len(gain)+1)
 	gained[0] = 0
